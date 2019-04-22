@@ -1,0 +1,5 @@
+*.gm2
+*.exe
+*.out
+/code
+/versions
