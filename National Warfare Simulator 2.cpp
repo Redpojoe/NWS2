@@ -62,11 +62,13 @@ namespace YCZL_Code{
 	}
 	long long CODE[CODE_SIZE];
 	char STR[CODE_SIZE];
+	int Wtime[CODE_SIZE];
 	void Rd_code(){
 		freopen("replay.gm2","r",stdin);
 		int n;YCZL_Rd(n);n=Pow(n,P-2);
 		int l=1;while(l<=n)l<<=1;
 		for(int i=0;i<l;i++)YCZL_Rd(CODE[i]);
+		for(int i=1;i<=n;i++)YCZL_Rd(Wtime[i]);
 		Poly::DFT(CODE,n,P-2);
 		for(int i=0;i<=n;i++)STR[i]=CODE[i];
 	}
@@ -76,6 +78,7 @@ namespace YCZL_Code{
 		for(int i=0;i<=n;i++)CODE[i]=STR[i];
 		int l=Poly::DFT(CODE,n,1);
 		for(int i=0;i<l;i++)YCZL_Wt(CODE[i]);
+		for(int i=1;i<=n;i++)YCZL_Wt(Wtime[i]);
 		int dy=rand()%100;
 		for(int i=1;i<=dy;i++)YCZL_Wt((unsigned)rand()*rand()*rand()*rand()*rand()%P);
 	}
@@ -117,25 +120,35 @@ namespace _BASIC_ART_{
 	}
 	const int COL[]={BLACK,RED,BLUE,YELLOW,GREEN,PINK,DBLUE,DGREY,DYELLOW};
 
+	char trc(char c){
+		if(c>='A' and c<='Z')return c-'A';
+		if(c==-32){
+			c=getche();
+			if(c==72)return 'w';
+			else if(c==75)return 'a';
+			else if(c==80)return 's';
+			else if(c==77)return 'd';
+			else if(c==83)return 'k';
+		}
+		else if(c=='#')return 'h';
+		else if(c=='\n' or c=='\r')return 'z';
+		else if(c==8)return 'k';
+		return c;
+	}
 	int Cho(int cnt,int fir=1){
 		int pos=fir;
 		c7();gotoxy(4+fir,1);printf("-->");
 		char c;
 		do{
-			gotoxy(5,1);color(BLACK);c=getche();
-			if(c==-32){
-				c=getche();
-				if(c==72)c='w';
-				else if(c==80)c='s';
-			}
+			gotoxy(5,1);color(BLACK);c=trc(getche());
 			c7();
 			gotoxy(4+pos,1);printf("   ");
-			if(c=='w' or c=='W')pos=pos==1?cnt:pos-1;
-			if(c=='s' or c=='S')pos=pos==cnt?1:pos+1;
+			if(c=='w')pos=pos==1?cnt:pos-1;
+			if(c=='s')pos=pos==cnt?1:pos+1;
 			gotoxy(4+pos,1);printf("-->");
-		}while(c!='\n' and c!='\r' and c!='z' and c!='Z');
+		}while(c!='z' and c!='k');
 		system("cls");
-		return pos;
+		return c=='k'?-1:pos;
 	}
 };using namespace _BASIC_ART_;
 
@@ -146,11 +159,11 @@ const int CHOC			=20;
 const int SIGHT			=5;
 const int CITY_PERCENT	=15;
 const int REP_SIZE		=100005;
-const int SLEP_REPLAY	=50;
 const int SK_CNT		=8;
 const double BOOM_RANGE	=7.05;
 const double BOOM_B		=3.0;
 const double BOOM_K		=0.005;
+const char VERSION[]="0.10.5";
 const int HOME_DIST[SK_CNT+1]={0,90,70,60,50,40,35,30,25};
 const int Skpro[SK_CNT+1]={0,50,40,35,30,20,55,30,35};
 const int dx[]={1,0,-1,0},dy[]={0,1,0,-1};
@@ -176,6 +189,7 @@ bool Spell[SK_CNT+5];
 int ar6;bool hv6[H+5][W+5];
 int saved;
 bool boom[H+5][W+5];
+
 struct Country{
 	int c;
 	int hx,hy;
@@ -549,7 +563,7 @@ void Round(){
 
 #define cip C[plid].Imp
 #define ifr C[plid].ifree
-int cgx,cgy;
+int cgx,cgy;int citm;
 void Change_Imp(){
 	cgx=C[plid].hx,cgy=C[plid].hy;
 	if(sighter==plid)Print(cgx,cgy,true);
@@ -557,37 +571,30 @@ void Change_Imp(){
 		char c;
 		if(Replay){
 			c=rep[++top];
-			if(sighter==plid)Sleep(SLEP_REPLAY);
+			if(c!='z')Sleep(YCZL_Code::Wtime[top]);
 		}
 		else{
 			gotoxy(H+1,W+2);color(BLACK);
-			c=getche();c7();
-			if(c==-32){
-				c=getche();
-				if(c==72)c='w';
-				else if(c==75)c='a';
-				else if(c==80)c='s';
-				else if(c==77)c='d';
-			}
-			if(c=='\n' or c=='\r')c='z';
+			c=trc(getche());c7();
 			rep[++top]=c;
+			YCZL_Code::Wtime[top]=clock()-citm;citm=clock();
 		}
-		if(c=='w' or c=='W'){
+		if(c=='w'){
 			if(Fish(cgx-1,cgy))continue;
 			Print(cgx,cgy);
 			cgx--;
 			if(sighter==plid)Print(cgx,cgy,true);
-		}else if(c=='a' or c=='A'){
+		}else if(c=='a'){
 			if(Fish(cgx,cgy-1))continue;
 			Print(cgx,cgy);
 			cgy--;
 			if(sighter==plid)Print(cgx,cgy,true);
-		}else if(c=='s' or c=='S'){
+		}else if(c=='s'){
 			if(Fish(cgx+1,cgy))continue;
 			Print(cgx,cgy);
 			cgx++;
 			if(sighter==plid)Print(cgx,cgy,true);
-		}else if(c=='d' or c=='D'){
+		}else if(c=='d'){
 			if(Fish(cgx,cgy+1))continue;
 			Print(cgx,cgy);
 			cgy++;
@@ -602,14 +609,14 @@ void Change_Imp(){
 			ifr++;
 			cip[cgx][cgy]--;
 			if(sighter==plid)Print(cgx,cgy,true);
-		}else if(isdigit(c) or c=='X' or c=='x'){
+		}else if(isdigit(c) or c=='o'){
 			if(isdigit(c))c^=48;
 			else c=10;
 			int ifrw=ifr+cip[cgx][cgy]-c;
 			if(ifrw<0 or ifrw>FOCUS)continue;
 			ifr=ifrw;cip[cgx][cgy]=c;
 			if(sighter==plid)Print(cgx,cgy,true);
-		}else if(c=='k' or c=='K'){
+		}else if(c=='k'){
 			for(int i=1;i<=H;i++)
 				for(int j=1;j<=W;j++)
 					if(cip[i][j]){
@@ -618,7 +625,7 @@ void Change_Imp(){
 					}
 			ifr=FOCUS;
 			if(sighter==plid)Print(cgx,cgy,true);
-		}else if(c=='j' or c=='J'){
+		}else if(c=='j'){
 			if(ifr==FOCUS)continue;
 			int xx,yy,dd=2e9;
 			for(int i=1;i<=H;i++)
@@ -628,13 +635,13 @@ void Change_Imp(){
 			if(sighter==plid)Print(cgx,cgy);
 			cgx=xx,cgy=yy;
 			if(sighter==plid)Print(cgx,cgy,true);
-		}else if(c=='#'){
+		}else if(c=='h'){
 			int tmpx=cgx,tmpy=cgy;
 			cgx=C[plid].hx,cgy=C[plid].hy;
 			if(sighter==plid)Print(tmpx,tmpy);
 			if(sighter==plid)Print(cgx,cgy,true);
 		}
-		else if(c=='z' or c=='Z')break;
+		else if(c=='z')break;
 	}
 	if(sighter==plid)Print(cgx,cgy);
 	C[plid].Init();
@@ -817,19 +824,14 @@ void Play(){
 	while(totc>1 and !die[sighter])R100();
 }
 
-int Choose_mode(){
-	puts("国战模拟器 2");
-	puts("version : 0.10.4");
-	gotoxy(5,1);
-	color(RED);puts("\tGAME STAT");
-	color(DPINK);puts("\tEXTRA START");
-	color(YELLOW);puts("\tSPELLESS START");
-	color(BLUE);puts("\tREPLAY");
-	color(GREEN);puts("\tQUIT");
-	return Cho(5);
-}
+void Choose_n(int st);
+void Choose_mode(int st);
+void ex_Choose_n();
+void Choose_Sk();
+void Choose_sighter();
+void Choose_reptype(int st);
 
-int Choose_n(){
+void Choose_n(int st=3){
 	puts("选择难度");
 	gotoxy(5,1);
 	color(GREEN);puts("\tSUPER EASY\t-- NOIP 初赛的难度");
@@ -840,9 +842,10 @@ int Choose_n(){
 	color(RED);puts("\tSUPER LUNATIC\t-- YNOI的难度");
 	color(WHITE);puts("\t1v1\t\t-- 特殊玩法用");
 	c7();puts("PS: 在这个没有AI的版本下，其实都很菜");
-	int c=Cho(7,3);
-	if(c==7)return 2;
-	return c+2;
+	int c=Cho(7,st);
+	if(c==-1)return Choose_mode(mode);
+	if(c==7)diffi=totc=2;
+	else diffi=totc=c+2;
 }
 
 void ex_Choose_n(){
@@ -850,10 +853,11 @@ void ex_Choose_n(){
 	gotoxy(5,1);
 	color(DPINK);puts("\tEXTRA   -- 从前有一位神仙，他闲着蛋疼，去AKIOI......");
 	c7();puts("PS: 在这个AI很弱的版本下，其实很菜");
-	Cho(1);
+	int ret=Cho(1);
+	if(ret==-1)Choose_mode(2);
 }
 
-int Choose_Sk(){
+void Choose_Sk(){
 	puts("选择自机");
 	gotoxy(5,1);
 	color(COL[1]);printf("\tA");
@@ -876,12 +880,17 @@ int Choose_Sk(){
 	if(mode!=3)puts("\t特技:触发时,在随机空地(若没有则选择边境)发动远程冲击波");else puts("");
 	c7();
 	int ret=Cho(SK_CNT+1,5);
+	if(ret==-1){
+		if(mode==1 or mode==3)Choose_n(totc==2?7:totc-2);
+		else if(mode==2)ex_Choose_n();
+		return;
+	}
 	if(ret==5)ret=rand()%SK_CNT+1;
 	else if(ret>5)ret--;
-	return ret;
+	sk[plid]=ret;
 }
 
-int Choose_sighter(){
+void Choose_sighter(){
 	puts("选择视角对应玩家");
 	gotoxy(5,1);
 	for(int i=1;i<=diffi;i++){
@@ -891,46 +900,55 @@ int Choose_sighter(){
 		printf("\t%c",sk[i]+'A'-1);
 	}
 	int c=Cho(diffi-1,1);
+	if(c==-1)return Choose_reptype(2);
 	if(c>=plid)c++;
-	return c;
+	sighter=c;
 }
 
-void Choose_reptype(){
+void Choose_reptype(int st=1){
 	puts("选择播放视角");
 	gotoxy(5,1);
 	color(GREEN);puts("\t第一人称视角");
 	color(RED);puts("\t第二人称视角");
 	color(YELLOW);puts("\t第三人称视角");
 	color(BLUE);puts("\t第负一人称视角");
-	int c=Cho(4,1);
+	int c=Cho(4,st);
+	if(c==-1)return Choose_mode(4);
 	if(c==3)god=true,sighter=0;
-	else if(c==2)sighter=Choose_sighter();
+	else if(c==2)Choose_sighter();
 	else if(c==1)sighter=plid;
 	else sighter=plid,Replay=false;
 }
 
-int main(){
-	system("mode con cols=210 lines=1000");
-	mode=Choose_mode();
+void Choose_mode(int st=1){
+	puts("国战模拟器 2");
+	printf("version : %s",VERSION);
+	gotoxy(5,1);
+	color(RED);puts("\tGAME STAT");
+	color(DPINK);puts("\tEXTRA START");
+	color(YELLOW);puts("\tSPELLESS START");
+	color(BLUE);puts("\tREPLAY");
+	color(GREEN);puts("\tQUIT");
+	mode=Cho(5,st);
 	seed=time(NULL)+(long long)(new char);srand(seed);
 	n=8;
 	if(mode==1){
-		diffi=totc=Choose_n();
+		Choose_n();
 		sighter=plid=rand()%totc+1;
-		sk[plid]=Choose_Sk();Plr[plid]=true;
+		Choose_Sk();Plr[plid]=true;
 		Make_Map();Play();
 		End();
 	}else if(mode==2){
 		diffi=totc=8;
 		sighter=plid=rand()%n+1;
 		ex_Choose_n();
-		sk[plid]=Choose_Sk();Plr[plid]=true;
+		Choose_Sk();Plr[plid]=true;
 		Make_Map();Play();
 		End();
 	}else if(mode==3){
-		diffi=totc=Choose_n();
+		Choose_n();
 		sighter=plid=rand()%totc+1;
-		sk[plid]=Choose_Sk();Plr[plid]=true;
+		Choose_Sk();Plr[plid]=true;
 		Make_Map();Play();
 		End();
 	}else if(mode==4){
@@ -943,5 +961,10 @@ int main(){
 		Play();
 		End();
 	}
+}
+
+int main(){
+	system("mode con cols=210 lines=1000");
+	Choose_mode();
 	return 0;
 }
