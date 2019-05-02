@@ -571,7 +571,7 @@ void Change_Imp(){
 		char c;
 		if(Replay){
 			c=rep[++top];
-			if(c!='z')Sleep(YCZL_Code::Wtime[top]);
+			if(c!='z')Sleep(min(YCZL_Code::Wtime[top],15000));
 		}
 		else{
 			gotoxy(H+1,W+2);color(BLACK);
@@ -846,6 +846,9 @@ void Choose_n(int st=3){
 	if(c==-1)return Choose_mode(mode);
 	if(c==7)diffi=totc=2;
 	else diffi=totc=c+2;
+	sighter=plid=rand()%totc+1;
+	Choose_Sk();Plr[plid]=true;
+	End();
 }
 
 void ex_Choose_n(){
@@ -855,6 +858,9 @@ void ex_Choose_n(){
 	c7();puts("PS: 在这个AI很弱的版本下，其实很菜");
 	int ret=Cho(1);
 	if(ret==-1)Choose_mode(2);
+	sighter=plid=rand()%n+1;
+	Choose_Sk();Plr[plid]=true;
+	End();
 }
 
 void Choose_Sk(){
@@ -888,6 +894,7 @@ void Choose_Sk(){
 	if(ret==5)ret=rand()%SK_CNT+1;
 	else if(ret>5)ret--;
 	sk[plid]=ret;
+	Make_Map();Play();
 }
 
 void Choose_sighter(){
@@ -903,6 +910,12 @@ void Choose_sighter(){
 	if(c==-1)return Choose_reptype(2);
 	if(c>=plid)c++;
 	sighter=c;
+	Replay=true;
+	Read_Rep();
+	srand(seed);Plr[plid=rand()%totc+1]=true;
+	sk[plid]=plidsk;
+	Make_Map();
+	Play();End();
 }
 
 void Choose_reptype(int st=1){
@@ -915,9 +928,14 @@ void Choose_reptype(int st=1){
 	int c=Cho(4,st);
 	if(c==-1)return Choose_mode(4);
 	if(c==3)god=true,sighter=0;
-	else if(c==2)Choose_sighter();
-	else if(c==1)sighter=plid;
-	else sighter=plid,Replay=false;
+	else if(c==2)return Choose_sighter();
+	Replay=c!=4;
+	Read_Rep();
+	srand(seed);Plr[plid=rand()%totc+1]=true;
+	if(c==1)sighter=plid;
+	sk[plid]=plidsk;
+	Make_Map();
+	Play();End();
 }
 
 void Choose_mode(int st=1){
@@ -934,32 +952,13 @@ void Choose_mode(int st=1){
 	n=8;
 	if(mode==1){
 		Choose_n();
-		sighter=plid=rand()%totc+1;
-		Choose_Sk();Plr[plid]=true;
-		Make_Map();Play();
-		End();
 	}else if(mode==2){
 		diffi=totc=8;
-		sighter=plid=rand()%n+1;
 		ex_Choose_n();
-		Choose_Sk();Plr[plid]=true;
-		Make_Map();Play();
-		End();
 	}else if(mode==3){
 		Choose_n();
-		sighter=plid=rand()%totc+1;
-		Choose_Sk();Plr[plid]=true;
-		Make_Map();Play();
-		End();
 	}else if(mode==4){
-		Replay=true;
-		Read_Rep();
-		srand(seed);Plr[plid=rand()%totc+1]=true;
-		sk[plid]=plidsk;
-		Make_Map();
 		Choose_reptype();
-		Play();
-		End();
 	}
 }
 
